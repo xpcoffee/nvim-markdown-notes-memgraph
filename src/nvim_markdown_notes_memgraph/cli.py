@@ -254,23 +254,16 @@ def config(ctx, memgraph_host, memgraph_port):
     (e.g., Claude Desktop, Continue, etc.) to connect to the
     nvim-markdown-notes-memgraph MCP server.
     """
+    from .config import generate_mcp_config
+
     notes_root = ctx.obj['notes_root']
 
-    # Find the package installation path to get the python module path
-    # The MCP server will be invoked via python -m
-    mcp_config = {
-        "mcpServers": {
-            "nvim-markdown-notes-memgraph": {
-                "command": "nvim-markdown-notes-memgraph",
-                "args": ["serve"],
-                "env": {
-                    "MEMGRAPH_HOST": memgraph_host,
-                    "MEMGRAPH_PORT": str(memgraph_port),
-                    "NOTES_ROOT": notes_root
-                }
-            }
-        }
-    }
+    # Generate the MCP configuration
+    mcp_config = generate_mcp_config(
+        notes_root=notes_root,
+        memgraph_host=memgraph_host,
+        memgraph_port=memgraph_port
+    )
 
     # Output as pretty-printed JSON
     click.echo(json.dumps(mcp_config, indent=2))
