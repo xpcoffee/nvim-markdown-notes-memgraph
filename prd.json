@@ -218,7 +218,7 @@
         "Pass environment variables for configuration"
       ],
       "passes": false,
-      "status": "in-progress"
+      "status": "done"
     },
     {
       "id": "4.7",
