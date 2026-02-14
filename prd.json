@@ -164,7 +164,7 @@
         "Print status message"
       ],
       "passes": false,
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "4.3",
