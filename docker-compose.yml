@@ -9,12 +9,21 @@ services:
     environment:
       - MEMGRAPH_LOG_LEVEL=WARNING
     command: ["--log-level=WARNING", "--also-log-to-stderr"]
+    healthcheck:
+      test: ["CMD-SHELL", "echo 'RETURN 1;' | mgconsole --host 127.0.0.1 --port 7687 || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
 
   mcp-server:
     build:
       context: .
       dockerfile: Dockerfile
     container_name: nvim-notes-mcp-server
+    depends_on:
+      memgraph:
+        condition: service_healthy
     networks:
       - nvim-notes-network
     environment:
