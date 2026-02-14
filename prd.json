@@ -244,7 +244,7 @@
         "Verify python -m nvim_markdown_notes_memgraph works"
       ],
       "passes": false,
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "5.1",
