@@ -29,7 +29,7 @@
         "Verify package imports work"
       ],
       "passes": false,
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "1.3",
