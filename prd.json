@@ -231,7 +231,7 @@
         "Pass configuration from CLI options"
       ],
       "passes": false,
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "4.8",
