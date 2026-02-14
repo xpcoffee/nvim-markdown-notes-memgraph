@@ -55,7 +55,7 @@
         "Verify file copied correctly"
       ],
       "passes": false,
-      "status": "in-progress"
+      "status": "done"
     },
     {
       "id": "2.2",
