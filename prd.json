@@ -96,7 +96,7 @@
         "Set entrypoint to run MCP server"
       ],
       "passes": false,
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "3.2",
