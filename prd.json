@@ -418,7 +418,7 @@
         "Update README to recommend CLI"
       ],
       "passes": false,
-      "status": "pending"
+      "status": "done"
     }
   ]
 }
