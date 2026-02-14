@@ -319,5 +319,57 @@ def serve(ctx, memgraph_host, memgraph_port):
     asyncio.run(server.main())
 
 
+@main.command()
+@click.option(
+    '--memgraph-host',
+    envvar='MEMGRAPH_HOST',
+    default='localhost',
+    help='Memgraph host (defaults to localhost or $MEMGRAPH_HOST)',
+)
+@click.option(
+    '--memgraph-port',
+    envvar='MEMGRAPH_PORT',
+    default=7687,
+    type=int,
+    help='Memgraph port (defaults to 7687 or $MEMGRAPH_PORT)',
+)
+@click.pass_context
+def bridge(ctx, memgraph_host, memgraph_port):
+    """Run the Neovim bridge (stdin/stdout JSON).
+
+    This command starts the Memgraph bridge for Neovim integration.
+    It communicates via JSON over stdin/stdout and uses the Bolt protocol
+    to connect to Memgraph.
+
+    The bridge supports actions like:
+    - connect: Establish connection to Memgraph
+    - health_check: Check if connection is alive
+    - update_note: Update a note and its relationships in the graph
+    - delete_note: Remove a note from the graph
+    - query: Execute a Cypher query
+    - reindex: Rebuild the entire graph from scratch
+    - stats: Get graph statistics
+
+    Configuration is passed via environment variables:
+    - MEMGRAPH_HOST: Memgraph host (default: localhost)
+    - MEMGRAPH_PORT: Memgraph port (default: 7687)
+    - NOTES_ROOT: Root directory for markdown notes
+    """
+    # Set environment variables for the bridge
+    os.environ['MEMGRAPH_HOST'] = memgraph_host
+    os.environ['MEMGRAPH_PORT'] = str(memgraph_port)
+
+    # notes_root is already set from the global option
+    notes_root = ctx.obj['notes_root']
+    os.environ['NOTES_ROOT'] = notes_root
+
+    # Import and run the bridge
+    from .bridge import MemgraphBridge
+
+    # Create and run the bridge
+    bridge_instance = MemgraphBridge()
+    bridge_instance.run()
+
+
 if __name__ == '__main__':
     main()
