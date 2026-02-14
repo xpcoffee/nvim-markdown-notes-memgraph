@@ -368,6 +368,357 @@ nvim-markdown-notes-memgraph config
 
 Copy the output to your Continue MCP servers configuration.
 
+## Neovim Integration
+
+The CLI provides a `bridge` command that enables Neovim plugins to communicate with Memgraph via a JSON-over-stdin/stdout protocol.
+
+### Bridge Protocol
+
+The bridge command runs a persistent process that reads JSON requests from stdin and writes JSON responses to stdout. Each request/response is a single line of JSON.
+
+**Request format:**
+
+```json
+{
+  "action": "action_name",
+  "params": {
+    "key": "value"
+  }
+}
+```
+
+**Response format:**
+
+```json
+{
+  "success": true,
+  "data": {},
+  "error": null
+}
+```
+
+### Supported Actions
+
+The bridge supports the following actions:
+
+- **connect**: Establish connection to Memgraph
+  ```json
+  {"action": "connect", "params": {"host": "localhost", "port": 7687}}
+  ```
+
+- **health_check**: Check if connection is alive
+  ```json
+  {"action": "health_check", "params": {}}
+  ```
+
+- **update_note**: Update a note and its relationships in the graph
+  ```json
+  {
+    "action": "update_note",
+    "params": {
+      "path": "/path/to/note.md",
+      "title": "Note Title",
+      "content": "Note content...",
+      "wikilinks": [{"target_path": "/path/to/other.md", "line_number": 5}],
+      "mentions": [{"name": "username", "line_number": 10}],
+      "hashtags": [{"name": "tagname", "line_number": 15}]
+    }
+  }
+  ```
+
+- **delete_note**: Remove a note from the graph
+  ```json
+  {"action": "delete_note", "params": {"path": "/path/to/note.md"}}
+  ```
+
+- **query**: Execute a Cypher query
+  ```json
+  {
+    "action": "query",
+    "params": {
+      "cypher": "MATCH (n:Note) RETURN n.title LIMIT 5",
+      "params": {}
+    }
+  }
+  ```
+
+- **reindex**: Rebuild the entire graph from scratch
+  ```json
+  {
+    "action": "reindex",
+    "params": {
+      "notes": [
+        {
+          "path": "/path/to/note.md",
+          "title": "Note Title",
+          "content": "Content...",
+          "wikilinks": [],
+          "mentions": [],
+          "hashtags": []
+        }
+      ]
+    }
+  }
+  ```
+
+- **stats**: Get graph statistics
+  ```json
+  {"action": "stats", "params": {}}
+  ```
+
+- **quit**: Gracefully shut down the bridge
+  ```json
+  {"action": "quit", "params": {}}
+  ```
+
+### Example: Neovim Lua Integration
+
+Here's an example of how to integrate the CLI bridge into a Neovim plugin:
+
+```lua
+local M = {}
+
+-- Job ID for the bridge process
+local job_id = nil
+local is_connected = false
+
+-- Callback management
+local pending_callbacks = {}
+local callback_counter = 0
+local response_buffer = ""
+
+-- Parse JSON response
+local function parse_response(line)
+  local ok, result = pcall(vim.json.decode, line)
+  if ok then
+    return result
+  end
+  return nil
+end
+
+-- Send a request to the bridge
+local function send_request(action, params, callback)
+  if not job_id then
+    if callback then
+      callback(false, nil, "Bridge not started")
+    end
+    return
+  end
+
+  local request = vim.json.encode({
+    action = action,
+    params = params or {}
+  })
+
+  if callback then
+    callback_counter = callback_counter + 1
+    pending_callbacks[callback_counter] = callback
+  end
+
+  vim.fn.chansend(job_id, request .. "\n")
+end
+
+-- Handle stdout from bridge
+local function on_stdout(_, data, _)
+  for _, line in ipairs(data) do
+    if line and line ~= "" then
+      response_buffer = response_buffer .. line
+
+      local response = parse_response(response_buffer)
+      if response then
+        response_buffer = ""
+
+        -- Find oldest pending callback
+        local oldest_key = nil
+        for key, _ in pairs(pending_callbacks) do
+          if oldest_key == nil or key < oldest_key then
+            oldest_key = key
+          end
+        end
+
+        if oldest_key and pending_callbacks[oldest_key] then
+          local cb = pending_callbacks[oldest_key]
+          pending_callbacks[oldest_key] = nil
+          cb(response.success, response.data, response.error)
+        end
+
+        -- Update connection state
+        if type(response.data) == "table" then
+          if response.data.status == "healthy" then
+            is_connected = true
+          elseif response.data.message and response.data.message:match("^Connected") then
+            is_connected = true
+          end
+        end
+      end
+    end
+  end
+end
+
+-- Start the bridge process
+function M.start_bridge(callback)
+  if job_id then
+    if callback then
+      callback(true, "Bridge already running")
+    end
+    return
+  end
+
+  -- Start the bridge command
+  local cmd = { "nvim-markdown-notes-memgraph", "bridge" }
+
+  job_id = vim.fn.jobstart(cmd, {
+    on_stdout = on_stdout,
+    on_exit = function(_, exit_code, _)
+      job_id = nil
+      is_connected = false
+      for key, cb in pairs(pending_callbacks) do
+        cb(false, nil, "Bridge exited with code " .. exit_code)
+        pending_callbacks[key] = nil
+      end
+    end,
+    stdout_buffered = false,
+  })
+
+  if job_id <= 0 then
+    job_id = nil
+    if callback then
+      callback(false, "Failed to start bridge")
+    end
+    return
+  end
+
+  -- Connect to Memgraph
+  vim.defer_fn(function()
+    send_request("connect", { host = "localhost", port = 7687 }, callback)
+  end, 100)
+end
+
+-- Ensure services are running and connected
+function M.ensure_services(callback)
+  -- Check if CLI is installed
+  if vim.fn.executable("nvim-markdown-notes-memgraph") == 0 then
+    if callback then
+      callback(false, nil, "nvim-markdown-notes-memgraph CLI not installed")
+    end
+    return
+  end
+
+  -- Start services if not running
+  vim.fn.jobstart(
+    { "nvim-markdown-notes-memgraph", "start" },
+    {
+      on_exit = function(_, exit_code, _)
+        if exit_code == 0 then
+          -- Services started, now start bridge
+          M.start_bridge(callback)
+        else
+          if callback then
+            callback(false, nil, "Failed to start services")
+          end
+        end
+      end
+    }
+  )
+end
+
+-- Update a note in the graph
+function M.update_note(path, title, content, entities, callback)
+  send_request("update_note", {
+    path = path,
+    title = title,
+    content = content,
+    wikilinks = entities.wikilinks or {},
+    mentions = entities.mentions or {},
+    hashtags = entities.hashtags or {}
+  }, callback)
+end
+
+-- Get graph statistics
+function M.get_stats(callback)
+  send_request("stats", {}, callback)
+end
+
+return M
+```
+
+### Usage in Your Plugin
+
+```lua
+local graph = require("your_plugin.graph")
+
+-- Ensure services are running and connect
+graph.ensure_services(function(success, data, err)
+  if success then
+    print("Connected to Memgraph!")
+
+    -- Update a note
+    graph.update_note(
+      "/home/user/notes/example.md",
+      "Example Note",
+      "This is the content...",
+      {
+        wikilinks = {
+          { target_path = "/home/user/notes/other.md", line_number = 5 }
+        },
+        mentions = {
+          { name = "alice", line_number = 10 }
+        },
+        hashtags = {
+          { name = "project", line_number = 15 }
+        }
+      },
+      function(success, data, err)
+        if success then
+          print("Note updated!")
+        else
+          print("Error: " .. (err or "unknown"))
+        end
+      end
+    )
+  else
+    print("Failed to connect: " .. (err or "unknown"))
+  end
+end)
+```
+
+### ensure_services() Pattern
+
+The `ensure_services()` pattern is the recommended way to integrate the CLI with your Neovim plugin:
+
+1. **Check if CLI is installed**: Verify that `nvim-markdown-notes-memgraph` is in PATH
+2. **Start services**: Run `nvim-markdown-notes-memgraph start` to ensure Memgraph and MCP server are running
+3. **Start bridge**: Launch the bridge command and connect to Memgraph
+4. **Handle errors gracefully**: Provide helpful error messages if any step fails
+
+This pattern ensures that:
+- Services are automatically started when needed
+- Users don't need to manually start Docker containers
+- The plugin works out of the box after installing the CLI
+- Service management is transparent to the user
+
+### Environment Variables
+
+The bridge command respects the following environment variables:
+
+- `NOTES_ROOT`: Root directory for markdown notes (default: `~/notes`)
+- `MEMGRAPH_HOST`: Memgraph host (default: `localhost`)
+- `MEMGRAPH_PORT`: Memgraph port (default: `7687`)
+
+You can set these in your Neovim configuration:
+
+```lua
+vim.env.NOTES_ROOT = vim.fn.expand("~/Documents/notes")
+vim.env.MEMGRAPH_HOST = "localhost"
+vim.env.MEMGRAPH_PORT = "7687"
+```
+
+Or pass them when starting the bridge:
+
+```bash
+NOTES_ROOT=~/Documents/notes nvim-markdown-notes-memgraph bridge
+```
+
 ## Troubleshooting
 
 ### Services won't start
