@@ -257,7 +257,7 @@
         "Support customizable host/port/notes-root"
       ],
       "passes": false,
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "5.2",
