@@ -68,7 +68,7 @@
         "Verify file copied correctly"
       ],
       "passes": false,
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "2.3",
