@@ -326,7 +326,7 @@
         "Run with pytest"
       ],
       "passes": false,
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "6.3",
