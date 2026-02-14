@@ -271,7 +271,7 @@
         "Handle errors gracefully"
       ],
       "passes": false,
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "5.3",
