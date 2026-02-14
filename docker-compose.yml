@@ -1,0 +1,29 @@
+services:
+  memgraph:
+    image: memgraph/memgraph:latest
+    container_name: nvim-notes-memgraph
+    ports:
+      - "7687:7687"
+    networks:
+      - nvim-notes-network
+    environment:
+      - MEMGRAPH_LOG_LEVEL=WARNING
+    command: ["--log-level=WARNING", "--also-log-to-stderr"]
+
+  mcp-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: nvim-notes-mcp-server
+    networks:
+      - nvim-notes-network
+    environment:
+      - MEMGRAPH_HOST=memgraph
+      - MEMGRAPH_PORT=7687
+      - NOTES_ROOT=/notes
+    stdin_open: true
+    tty: true
+
+networks:
+  nvim-notes-network:
+    driver: bridge
