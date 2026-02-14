@@ -16,7 +16,7 @@
         "Run git init"
       ],
       "passes": false,
-      "status": "pending"
+      "status": "in-progress"
     },
     {
       "id": "1.2",
