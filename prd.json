@@ -205,7 +205,7 @@
         "Format as valid JSON"
       ],
       "passes": false,
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "4.6",
