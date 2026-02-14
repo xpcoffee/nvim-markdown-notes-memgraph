@@ -121,5 +121,40 @@ def start(ctx):
     click.echo("Run 'docker compose ps' to check service status manually.")
 
 
+@main.command()
+@click.pass_context
+def stop(ctx):
+    """Stop Docker Compose services (Memgraph + MCP server)."""
+    # Find the project root (where docker-compose.yml is located)
+    # The CLI is in src/nvim_markdown_notes_memgraph/cli.py, so go up to project root
+    cli_file = Path(__file__).resolve()
+    project_root = cli_file.parent.parent.parent
+    compose_file = project_root / 'docker-compose.yml'
+
+    if not compose_file.exists():
+        click.echo(f"Error: docker-compose.yml not found at {compose_file}", err=True)
+        raise click.Abort()
+
+    click.echo("Stopping services...")
+
+    # Stop Docker Compose services
+    try:
+        result = subprocess.run(
+            ['docker', 'compose', '-f', str(compose_file), 'down'],
+            cwd=str(project_root),
+            capture_output=True,
+            text=True,
+            check=True
+        )
+        click.echo(result.stdout)
+        click.echo("Services stopped successfully.")
+    except subprocess.CalledProcessError as e:
+        click.echo(f"Error stopping services: {e.stderr}", err=True)
+        raise click.Abort()
+    except FileNotFoundError:
+        click.echo("Error: docker or docker compose not found. Please install Docker.", err=True)
+        raise click.Abort()
+
+
 if __name__ == '__main__':
     main()
