@@ -9,6 +9,8 @@ services:
     environment:
       - MEMGRAPH_LOG_LEVEL=WARNING
     command: ["--log-level=WARNING", "--also-log-to-stderr"]
+    volumes:
+      - memgraph-data:/var/lib/memgraph
     healthcheck:
       test: ["CMD-SHELL", "echo 'RETURN 1;' | mgconsole --host 127.0.0.1 --port 7687 || exit 1"]
       interval: 5s
@@ -30,9 +32,14 @@ services:
       - MEMGRAPH_HOST=memgraph
       - MEMGRAPH_PORT=7687
       - NOTES_ROOT=/notes
+    volumes:
+      - ${NOTES_ROOT:-~/notes}:/notes:ro
     stdin_open: true
     tty: true
 
 networks:
   nvim-notes-network:
     driver: bridge
+
+volumes:
+  memgraph-data:
