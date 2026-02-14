@@ -82,7 +82,7 @@
         "Verify python -m py_compile passes on all files"
       ],
       "passes": false,
-      "status": "pending"
+      "status": "in-progress"
     },
     {
       "id": "3.1",

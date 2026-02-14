@@ -24,6 +24,9 @@ import glob
 from typing import Any, Optional
 from pathlib import Path
 
+# Package imports
+from . import entities
+
 # MCP SDK imports
 try:
     from mcp.server import Server
@@ -254,68 +257,7 @@ class MemgraphNotesServer:
 
     def extract_from_file(self, filepath: str) -> dict:
         """Extract wikilinks, mentions, and hashtags from a markdown file."""
-        try:
-            with open(filepath, 'r', encoding='utf-8', errors='ignore') as f:
-                content = f.read()
-        except Exception as e:
-            return {
-                'path': filepath,
-                'title': Path(filepath).stem,
-                'content': '',
-                'wikilinks': [],
-                'mentions': [],
-                'hashtags': []
-            }
-
-        lines = content.split('\n')
-        title = lines[0] if lines else Path(filepath).stem
-        title = re.sub(r'^#+ ', '', title)  # Remove heading prefix
-
-        wikilinks = []
-        mentions = []
-        hashtags = []
-
-        for line_num, line in enumerate(lines, 1):
-            # Wikilinks: [[target]] or [[target|alias]]
-            for match in re.finditer(r'\[\[([^\]|]+)(?:\|[^\]]+)?\]\]', line):
-                link_text = match.group(1)
-                target_path = os.path.join(self.notes_root, link_text + '.md')
-                wikilinks.append({
-                    'target': link_text,
-                    'target_path': target_path,
-                    'line_number': line_num
-                })
-
-            # Mentions: @person-name (allow hyphens and underscores)
-            for match in re.finditer(r'@([a-zA-Z][a-zA-Z0-9_-]*)', line):
-                name = match.group(1)
-                end_pos = match.end()
-                rest_of_line = line[end_pos:]
-                # Skip if this is part of an email
-                if rest_of_line.startswith(('@', '.com', '.co', '.org', '.io', '.nl', '.uk')):
-                    continue
-                mentions.append({
-                    'name': name,
-                    'line_number': line_num
-                })
-
-            # Hashtags: #tag
-            for match in re.finditer(r'(?<![/=])#([a-zA-Z][a-zA-Z0-9_-]*)', line):
-                tag = match.group(1)
-                if tag not in ['gid', 'browse', 'edit', 'resource']:
-                    hashtags.append({
-                        'name': tag,
-                        'line_number': line_num
-                    })
-
-        return {
-            'path': filepath,
-            'title': title,
-            'content': content,
-            'wikilinks': wikilinks,
-            'mentions': mentions,
-            'hashtags': hashtags
-        }
+        return entities.extract_from_file(filepath, self.notes_root)
 
     def reindex_all_notes(self) -> dict:
         """Reindex all notes in the notes_root directory."""
