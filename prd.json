@@ -366,7 +366,7 @@
         "Use CLI bridge command if available"
       ],
       "passes": false,
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "7.2",
