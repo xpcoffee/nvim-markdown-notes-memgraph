@@ -123,7 +123,7 @@
         "Configure mcp-server to depend on memgraph health"
       ],
       "passes": false,
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "3.4",
