@@ -276,5 +276,48 @@ def config(ctx, memgraph_host, memgraph_port):
     click.echo(json.dumps(mcp_config, indent=2))
 
 
+@main.command()
+@click.option(
+    '--memgraph-host',
+    envvar='MEMGRAPH_HOST',
+    default='localhost',
+    help='Memgraph host (defaults to localhost or $MEMGRAPH_HOST)',
+)
+@click.option(
+    '--memgraph-port',
+    envvar='MEMGRAPH_PORT',
+    default=7687,
+    type=int,
+    help='Memgraph port (defaults to 7687 or $MEMGRAPH_PORT)',
+)
+@click.pass_context
+def serve(ctx, memgraph_host, memgraph_port):
+    """Run the MCP server directly (for container use).
+
+    This command starts the MCP server over stdio. It's intended for use
+    as a Docker container entrypoint or for direct MCP client connections.
+
+    Configuration is passed via environment variables:
+    - MEMGRAPH_HOST: Memgraph host (default: localhost)
+    - MEMGRAPH_PORT: Memgraph port (default: 7687)
+    - NOTES_ROOT: Root directory for markdown notes
+    """
+    import asyncio
+
+    # Set environment variables for the server
+    os.environ['MEMGRAPH_HOST'] = memgraph_host
+    os.environ['MEMGRAPH_PORT'] = str(memgraph_port)
+
+    # notes_root is already set from the global option
+    notes_root = ctx.obj['notes_root']
+    os.environ['NOTES_ROOT'] = notes_root
+
+    # Import and run the MCP server
+    from . import server
+
+    # Run the server's main function
+    asyncio.run(server.main())
+
+
 if __name__ == '__main__':
     main()
