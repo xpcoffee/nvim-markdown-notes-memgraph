@@ -42,7 +42,7 @@
         "Commit .gitignore"
       ],
       "passes": false,
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "2.1",
