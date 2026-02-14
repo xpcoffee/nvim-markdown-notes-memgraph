@@ -285,7 +285,7 @@
         "Verify nvim-markdown-notes-memgraph command exists"
       ],
       "passes": false,
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "5.4",
