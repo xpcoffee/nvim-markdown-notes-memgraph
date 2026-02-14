@@ -1,0 +1,424 @@
+{
+  "project": "nvim-markdown-notes-memgraph",
+  "description": "Standalone CLI for Memgraph + MCP server with Docker Compose orchestration",
+  "source_repo": "/home/rick/code/personal/nvim-markdown-notes",
+  "items": [
+    {
+      "id": "1.1",
+      "category": "setup",
+      "phase": 1,
+      "description": "Create new repo structure with pyproject.toml, README.md, LICENSE",
+      "steps": [
+        "Create directory at /home/rick/code/personal/nvim-markdown-notes-memgraph",
+        "Create pyproject.toml with project metadata and dependencies",
+        "Create README.md with project description",
+        "Create LICENSE (MIT)",
+        "Run git init"
+      ],
+      "passes": false,
+      "status": "pending"
+    },
+    {
+      "id": "1.2",
+      "category": "setup",
+      "phase": 1,
+      "description": "Set up src/nvim_markdown_notes_memgraph/ package structure",
+      "steps": [
+        "Create src/nvim_markdown_notes_memgraph/ directory",
+        "Create __init__.py with version",
+        "Verify package imports work"
+      ],
+      "passes": false,
+      "status": "pending"
+    },
+    {
+      "id": "1.3",
+      "category": "setup",
+      "phase": 1,
+      "description": "Add .gitignore for Python, Docker, and editor artifacts",
+      "steps": [
+        "Create .gitignore with Python patterns",
+        "Include Docker, venv, IDE patterns",
+        "Commit .gitignore"
+      ],
+      "passes": false,
+      "status": "pending"
+    },
+    {
+      "id": "2.1",
+      "category": "extraction",
+      "phase": 2,
+      "description": "Copy memgraph_notes_server.py to server.py",
+      "steps": [
+        "Copy from /home/rick/code/personal/nvim-markdown-notes/mcp/memgraph_notes_server.py",
+        "Place in src/nvim_markdown_notes_memgraph/server.py",
+        "Verify file copied correctly"
+      ],
+      "passes": false,
+      "status": "pending"
+    },
+    {
+      "id": "2.2",
+      "category": "extraction",
+      "phase": 2,
+      "description": "Copy memgraph_bridge.py to bridge.py",
+      "steps": [
+        "Copy from /home/rick/code/personal/nvim-markdown-notes/scripts/memgraph_bridge.py",
+        "Place in src/nvim_markdown_notes_memgraph/bridge.py",
+        "Verify file copied correctly"
+      ],
+      "passes": false,
+      "status": "pending"
+    },
+    {
+      "id": "2.3",
+      "category": "refactor",
+      "phase": 2,
+      "description": "Refactor imports and module structure to work as package",
+      "steps": [
+        "Update imports in server.py to be relative",
+        "Update imports in bridge.py to be relative",
+        "Extract shared code (entity extraction) to common module",
+        "Verify python -m py_compile passes on all files"
+      ],
+      "passes": false,
+      "status": "pending"
+    },
+    {
+      "id": "3.1",
+      "category": "docker",
+      "phase": 3,
+      "description": "Create Dockerfile for MCP server container",
+      "steps": [
+        "Create Dockerfile based on python:3.11-slim",
+        "Install pymgclient dependencies (build-essential, libssl-dev)",
+        "Copy package and install with pip",
+        "Set entrypoint to run MCP server"
+      ],
+      "passes": false,
+      "status": "pending"
+    },
+    {
+      "id": "3.2",
+      "category": "docker",
+      "phase": 3,
+      "description": "Create docker-compose.yml with Memgraph and MCP server services",
+      "steps": [
+        "Define memgraph service using memgraph/memgraph image",
+        "Define mcp-server service using local Dockerfile",
+        "Configure networking between services",
+        "Expose ports 7687 (Memgraph) and 8080 (MCP if needed)"
+      ],
+      "passes": false,
+      "status": "pending"
+    },
+    {
+      "id": "3.3",
+      "category": "docker",
+      "phase": 3,
+      "description": "Add health check for Memgraph service",
+      "steps": [
+        "Add healthcheck to memgraph service in docker-compose.yml",
+        "Use mg_client or TCP check on port 7687",
+        "Configure mcp-server to depend on memgraph health"
+      ],
+      "passes": false,
+      "status": "pending"
+    },
+    {
+      "id": "3.4",
+      "category": "docker",
+      "phase": 3,
+      "description": "Add volume mounts for notes directory and Memgraph data",
+      "steps": [
+        "Add named volume for memgraph data persistence",
+        "Add bind mount for notes directory (configurable)",
+        "Document volume configuration in README"
+      ],
+      "passes": false,
+      "status": "pending"
+    },
+    {
+      "id": "4.1",
+      "category": "cli",
+      "phase": 4,
+      "description": "Create cli.py with Click framework",
+      "steps": [
+        "Create src/nvim_markdown_notes_memgraph/cli.py",
+        "Import click and set up main group",
+        "Add --notes-root global option",
+        "Verify click import works"
+      ],
+      "passes": false,
+      "status": "pending"
+    },
+    {
+      "id": "4.2",
+      "category": "cli",
+      "phase": 4,
+      "description": "Implement start command",
+      "steps": [
+        "Add start command to cli.py",
+        "Start Docker Compose services in background",
+        "Wait for health check to pass",
+        "Print status message"
+      ],
+      "passes": false,
+      "status": "pending"
+    },
+    {
+      "id": "4.3",
+      "category": "cli",
+      "phase": 4,
+      "description": "Implement stop command",
+      "steps": [
+        "Add stop command to cli.py",
+        "Stop Docker Compose services",
+        "Print status message"
+      ],
+      "passes": false,
+      "status": "pending"
+    },
+    {
+      "id": "4.4",
+      "category": "cli",
+      "phase": 4,
+      "description": "Implement status command",
+      "steps": [
+        "Add status command to cli.py",
+        "Check if Docker Compose services are running",
+        "Show health status of each service",
+        "Print formatted output"
+      ],
+      "passes": false,
+      "status": "pending"
+    },
+    {
+      "id": "4.5",
+      "category": "cli",
+      "phase": 4,
+      "description": "Implement config command",
+      "steps": [
+        "Add config command to cli.py",
+        "Output MCP JSON configuration",
+        "Include environment variables for Memgraph connection",
+        "Format as valid JSON"
+      ],
+      "passes": false,
+      "status": "pending"
+    },
+    {
+      "id": "4.6",
+      "category": "cli",
+      "phase": 4,
+      "description": "Implement serve command",
+      "steps": [
+        "Add serve command to cli.py",
+        "Run MCP server directly (for container use)",
+        "Pass environment variables for configuration"
+      ],
+      "passes": false,
+      "status": "pending"
+    },
+    {
+      "id": "4.7",
+      "category": "cli",
+      "phase": 4,
+      "description": "Implement bridge command",
+      "steps": [
+        "Add bridge command to cli.py",
+        "Run Neovim bridge (stdin/stdout JSON)",
+        "Pass configuration from CLI options"
+      ],
+      "passes": false,
+      "status": "pending"
+    },
+    {
+      "id": "4.8",
+      "category": "cli",
+      "phase": 4,
+      "description": "Add __main__.py entry point",
+      "steps": [
+        "Create src/nvim_markdown_notes_memgraph/__main__.py",
+        "Import and call CLI main function",
+        "Verify python -m nvim_markdown_notes_memgraph works"
+      ],
+      "passes": false,
+      "status": "pending"
+    },
+    {
+      "id": "5.1",
+      "category": "packaging",
+      "phase": 5,
+      "description": "Create config.py for MCP config generation",
+      "steps": [
+        "Create src/nvim_markdown_notes_memgraph/config.py",
+        "Add function to generate MCP JSON config",
+        "Support customizable host/port/notes-root"
+      ],
+      "passes": false,
+      "status": "pending"
+    },
+    {
+      "id": "5.2",
+      "category": "packaging",
+      "phase": 5,
+      "description": "Create docker.py for Docker Compose management",
+      "steps": [
+        "Create src/nvim_markdown_notes_memgraph/docker.py",
+        "Add functions for start/stop/status",
+        "Use subprocess to call docker compose",
+        "Handle errors gracefully"
+      ],
+      "passes": false,
+      "status": "pending"
+    },
+    {
+      "id": "5.3",
+      "category": "packaging",
+      "phase": 5,
+      "description": "Finalize pyproject.toml with dependencies and scripts",
+      "steps": [
+        "Add all dependencies to pyproject.toml",
+        "Add [project.scripts] entry point",
+        "Verify pip install -e . works",
+        "Verify nvim-markdown-notes-memgraph command exists"
+      ],
+      "passes": false,
+      "status": "pending"
+    },
+    {
+      "id": "5.4",
+      "category": "packaging",
+      "phase": 5,
+      "description": "Add install script for one-liner setup",
+      "steps": [
+        "Create scripts/install.sh",
+        "Install Python package with pip/uv",
+        "Print post-install instructions"
+      ],
+      "passes": false,
+      "status": "pending"
+    },
+    {
+      "id": "6.1",
+      "category": "testing",
+      "phase": 6,
+      "description": "Add basic tests for CLI commands",
+      "steps": [
+        "Create tests/test_cli.py",
+        "Test CLI help output",
+        "Test config command output",
+        "Run with pytest"
+      ],
+      "passes": false,
+      "status": "pending"
+    },
+    {
+      "id": "6.2",
+      "category": "testing",
+      "phase": 6,
+      "description": "Add tests for MCP server functionality",
+      "steps": [
+        "Create tests/test_server.py",
+        "Test entity extraction functions",
+        "Test query building (mock Memgraph)",
+        "Run with pytest"
+      ],
+      "passes": false,
+      "status": "pending"
+    },
+    {
+      "id": "6.3",
+      "category": "documentation",
+      "phase": 6,
+      "description": "Write README with installation and usage",
+      "steps": [
+        "Document installation methods (pip, uv)",
+        "Document CLI commands with examples",
+        "Document Docker requirements",
+        "Add troubleshooting section"
+      ],
+      "passes": false,
+      "status": "pending"
+    },
+    {
+      "id": "6.4",
+      "category": "documentation",
+      "phase": 6,
+      "description": "Document nvim plugin integration pattern",
+      "steps": [
+        "Add section on Neovim integration",
+        "Show example Lua code for ensure_services()",
+        "Document bridge command usage"
+      ],
+      "passes": false,
+      "status": "pending"
+    },
+    {
+      "id": "7.1",
+      "category": "integration",
+      "phase": 7,
+      "description": "Update connection.lua to detect CLI",
+      "steps": [
+        "Modify /home/rick/code/personal/nvim-markdown-notes/lua/nvim-markdown-notes/graph/connection.lua",
+        "Add check for nvim-markdown-notes-memgraph executable",
+        "Use CLI bridge command if available"
+      ],
+      "passes": false,
+      "status": "pending"
+    },
+    {
+      "id": "7.2",
+      "category": "integration",
+      "phase": 7,
+      "description": "Add ensure_services() function",
+      "steps": [
+        "Add function to start services via CLI",
+        "Call before connecting to Memgraph",
+        "Handle CLI not installed gracefully"
+      ],
+      "passes": false,
+      "status": "pending"
+    },
+    {
+      "id": "7.3",
+      "category": "integration",
+      "phase": 7,
+      "description": "Add backwards compatibility fallback",
+      "steps": [
+        "Keep bundled scripts as fallback",
+        "Use CLI if available, bundled if not",
+        "Log which mode is being used"
+      ],
+      "passes": false,
+      "status": "pending"
+    },
+    {
+      "id": "7.4",
+      "category": "documentation",
+      "phase": 7,
+      "description": "Update nvim-markdown-notes README",
+      "steps": [
+        "Document new external dependency option",
+        "Show installation command for CLI",
+        "Update requirements section"
+      ],
+      "passes": false,
+      "status": "pending"
+    },
+    {
+      "id": "7.5",
+      "category": "cleanup",
+      "phase": 7,
+      "description": "Deprecate bundled mcp/ and scripts/",
+      "steps": [
+        "Add deprecation notice to bundled files",
+        "Keep for backwards compatibility",
+        "Update README to recommend CLI"
+      ],
+      "passes": false,
+      "status": "pending"
+    }
+  ]
+}
