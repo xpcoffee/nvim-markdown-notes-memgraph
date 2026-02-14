@@ -49,6 +49,10 @@ cd nvim-markdown-notes-memgraph
 pip install -e .
 ```
 
+### Auto-install from Neovim
+
+If you use the [nvim-markdown-notes](https://github.com/username/nvim-markdown-notes) plugin with `memgraph.enabled = true`, the plugin will detect the missing CLI and offer to install it for you automatically. See [Auto-install from Neovim](#auto-install-from-neovim-1) for details.
+
 ### Verify installation
 
 ```bash
@@ -95,6 +99,7 @@ nvim-markdown-notes-memgraph --notes-root ~/Documents/notes start
 ```
 
 This command:
+
 - Starts the Memgraph database container
 - Starts the MCP server container
 - Waits for services to be healthy (up to 60 seconds)
@@ -181,9 +186,7 @@ Output (example):
   "mcpServers": {
     "nvim-markdown-notes-memgraph": {
       "command": "nvim-markdown-notes-memgraph",
-      "args": [
-        "serve"
-      ],
+      "args": ["serve"],
       "env": {
         "MEMGRAPH_HOST": "localhost",
         "MEMGRAPH_PORT": "7687",
@@ -247,6 +250,7 @@ nvim-markdown-notes-memgraph bridge
 This command starts the Memgraph bridge for Neovim integration. It communicates via JSON over stdin/stdout and uses the Bolt protocol to connect to Memgraph.
 
 The bridge supports actions like:
+
 - `connect`: Establish connection to Memgraph
 - `health_check`: Check if connection is alive
 - `update_note`: Update a note and its relationships in the graph
@@ -372,6 +376,39 @@ Copy the output to your Continue MCP servers configuration.
 
 The CLI provides a `bridge` command that enables Neovim plugins to communicate with Memgraph via a JSON-over-stdin/stdout protocol.
 
+### Auto-install from Neovim
+
+When `memgraph.enabled = true` in your plugin config and the CLI is not on PATH, the plugin will prompt you to install it. The install uses whichever tool is available: `uv tool install` (preferred), `pip3 install`, or `pip install`.
+
+**Configuration options** (passed via `opts.memgraph`):
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `install_prompt` | `true` | Set to `false` to never prompt for installation |
+| `install_source` | `"git+https://github.com/xpcoffee/nvim-markdown-notes-memgraph.git"` | Package specifier passed to pip/uv. Override with a PyPI name or local path. |
+
+Example configuration:
+
+```lua
+require("nvim-markdown-notes").setup({
+  notes_root_path = "~/notes",
+  memgraph = {
+    enabled = true,
+    -- Disable auto-install prompt
+    install_prompt = false,
+    -- Or point to a local checkout
+    install_source = "/path/to/nvim-markdown-notes-memgraph",
+  },
+})
+```
+
+**Behaviour:**
+
+- If the CLI is already on PATH, no prompt is shown.
+- If the user declines the prompt, it won't appear again until Neovim restarts.
+- If `python3` is not available, or neither `uv` nor `pip` is found, the prompt is silently skipped and the plugin falls back to bundled scripts.
+- Run `:MemgraphInstallCLI` at any time to trigger the install prompt manually (resets any prior decline).
+
 ### Bridge Protocol
 
 The bridge command runs a persistent process that reads JSON requests from stdin and writes JSON responses to stdout. Each request/response is a single line of JSON.
@@ -402,16 +439,19 @@ The bridge command runs a persistent process that reads JSON requests from stdin
 The bridge supports the following actions:
 
 - **connect**: Establish connection to Memgraph
+
   ```json
-  {"action": "connect", "params": {"host": "localhost", "port": 7687}}
+  { "action": "connect", "params": { "host": "localhost", "port": 7687 } }
   ```
 
 - **health_check**: Check if connection is alive
+
   ```json
-  {"action": "health_check", "params": {}}
+  { "action": "health_check", "params": {} }
   ```
 
 - **update_note**: Update a note and its relationships in the graph
+
   ```json
   {
     "action": "update_note",
@@ -419,19 +459,21 @@ The bridge supports the following actions:
       "path": "/path/to/note.md",
       "title": "Note Title",
       "content": "Note content...",
-      "wikilinks": [{"target_path": "/path/to/other.md", "line_number": 5}],
-      "mentions": [{"name": "username", "line_number": 10}],
-      "hashtags": [{"name": "tagname", "line_number": 15}]
+      "wikilinks": [{ "target_path": "/path/to/other.md", "line_number": 5 }],
+      "mentions": [{ "name": "username", "line_number": 10 }],
+      "hashtags": [{ "name": "tagname", "line_number": 15 }]
     }
   }
   ```
 
 - **delete_note**: Remove a note from the graph
+
   ```json
-  {"action": "delete_note", "params": {"path": "/path/to/note.md"}}
+  { "action": "delete_note", "params": { "path": "/path/to/note.md" } }
   ```
 
 - **query**: Execute a Cypher query
+
   ```json
   {
     "action": "query",
@@ -443,6 +485,7 @@ The bridge supports the following actions:
   ```
 
 - **reindex**: Rebuild the entire graph from scratch
+
   ```json
   {
     "action": "reindex",
@@ -462,13 +505,14 @@ The bridge supports the following actions:
   ```
 
 - **stats**: Get graph statistics
+
   ```json
-  {"action": "stats", "params": {}}
+  { "action": "stats", "params": {} }
   ```
 
 - **quit**: Gracefully shut down the bridge
   ```json
-  {"action": "quit", "params": {}}
+  { "action": "quit", "params": {} }
   ```
 
 ### Example: Neovim Lua Integration
@@ -692,6 +736,7 @@ The `ensure_services()` pattern is the recommended way to integrate the CLI with
 4. **Handle errors gracefully**: Provide helpful error messages if any step fails
 
 This pattern ensures that:
+
 - Services are automatically started when needed
 - Users don't need to manually start Docker containers
 - The plugin works out of the box after installing the CLI
@@ -803,6 +848,26 @@ NOTES_ROOT=~/Documents/notes nvim-markdown-notes-memgraph bridge
 
    ```bash
    nvim-markdown-notes-memgraph --notes-root /correct/path start
+   ```
+
+### CLI not installed
+
+**Problem**: The plugin falls back to bundled scripts or reports the CLI is missing.
+
+**Solutions**:
+
+1. Run `:MemgraphInstallCLI` inside Neovim to trigger the auto-install prompt.
+
+2. Or install manually:
+
+   ```bash
+   pip install git+https://github.com/xpcoffee/nvim-markdown-notes-memgraph.git
+   ```
+
+3. Verify the CLI is on PATH:
+
+   ```bash
+   nvim-markdown-notes-memgraph --help
    ```
 
 ### Connection refused to Memgraph
