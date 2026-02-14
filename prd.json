@@ -298,7 +298,7 @@
         "Print post-install instructions"
       ],
       "passes": false,
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "6.1",
