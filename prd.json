@@ -110,7 +110,7 @@
         "Expose ports 7687 (Memgraph) and 8080 (MCP if needed)"
       ],
       "passes": false,
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "3.3",
