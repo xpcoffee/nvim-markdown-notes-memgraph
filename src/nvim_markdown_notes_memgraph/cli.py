@@ -3,6 +3,7 @@
 Provides commands for managing Memgraph and MCP server via Docker Compose.
 """
 
+import json
 import os
 import subprocess
 import time
@@ -181,7 +182,6 @@ def status(ctx):
         )
 
         # Parse the JSON output
-        import json
         services = []
         for line in result.stdout.strip().split('\n'):
             if line:
@@ -232,6 +232,48 @@ def status(ctx):
     except FileNotFoundError:
         click.echo("Error: docker or docker compose not found. Please install Docker.", err=True)
         raise click.Abort()
+
+
+@main.command()
+@click.option(
+    '--memgraph-host',
+    default='localhost',
+    help='Memgraph host (default: localhost)',
+)
+@click.option(
+    '--memgraph-port',
+    default=7687,
+    type=int,
+    help='Memgraph port (default: 7687)',
+)
+@click.pass_context
+def config(ctx, memgraph_host, memgraph_port):
+    """Output MCP JSON configuration for use with MCP clients.
+
+    This configuration can be added to MCP client config files
+    (e.g., Claude Desktop, Continue, etc.) to connect to the
+    nvim-markdown-notes-memgraph MCP server.
+    """
+    notes_root = ctx.obj['notes_root']
+
+    # Find the package installation path to get the python module path
+    # The MCP server will be invoked via python -m
+    mcp_config = {
+        "mcpServers": {
+            "nvim-markdown-notes-memgraph": {
+                "command": "nvim-markdown-notes-memgraph",
+                "args": ["serve"],
+                "env": {
+                    "MEMGRAPH_HOST": memgraph_host,
+                    "MEMGRAPH_PORT": str(memgraph_port),
+                    "NOTES_ROOT": notes_root
+                }
+            }
+        }
+    }
+
+    # Output as pretty-printed JSON
+    click.echo(json.dumps(mcp_config, indent=2))
 
 
 if __name__ == '__main__':
