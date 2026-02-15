@@ -4,8 +4,6 @@ services:
     container_name: nvim-notes-memgraph
     ports:
       - "7687:7687"
-    networks:
-      - nvim-notes-network
     environment:
       - MEMGRAPH_LOG_LEVEL=WARNING
     command: ["--log-level=WARNING", "--also-log-to-stderr"]
@@ -19,15 +17,11 @@ services:
       start_period: 10s
 
   mcp-server:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: ghcr.io/xpcoffee/nvim-markdown-notes-memgraph:latest
     container_name: nvim-notes-mcp-server
     depends_on:
       memgraph:
         condition: service_healthy
-    networks:
-      - nvim-notes-network
     environment:
       - MEMGRAPH_HOST=memgraph
       - MEMGRAPH_PORT=7687
@@ -36,10 +30,6 @@ services:
       - ${NOTES_ROOT:-~/notes}:/notes:ro
     stdin_open: true
     tty: true
-
-networks:
-  nvim-notes-network:
-    driver: bridge
 
 volumes:
   memgraph-data:

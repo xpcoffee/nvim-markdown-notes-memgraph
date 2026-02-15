@@ -44,4 +44,3 @@ packages = ["src/nvim_markdown_notes_memgraph"]
 
 [tool.hatch.build.targets.wheel.force-include]
 "docker-compose.yml" = "nvim_markdown_notes_memgraph/docker-compose.yml"
-"Dockerfile" = "nvim_markdown_notes_memgraph/Dockerfile"
