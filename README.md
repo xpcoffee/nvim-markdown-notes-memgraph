@@ -17,6 +17,10 @@ Extracts the Memgraph graph database functionality from [nvim-markdown-notes](ht
 - Python 3.10+
 - Docker
 - Docker Compose
+- **Build tools** (needed to compile the Memgraph client):
+  - Ubuntu/Debian: `sudo apt install cmake build-essential libssl-dev`
+  - macOS: `brew install cmake openssl`
+  - Arch: `sudo pacman -S cmake base-devel openssl`
 
 Docker and Docker Compose must be installed and running before using this package. The CLI manages Docker Compose services, so these are hard prerequisites.
 
@@ -869,6 +873,19 @@ NOTES_ROOT=~/Documents/notes nvim-markdown-notes-memgraph bridge
    ```bash
    nvim-markdown-notes-memgraph --help
    ```
+
+### Installation fails with cmake error
+
+**Problem**: `pip install` or `uv tool install` fails with a long error trace mentioning cmake or CMakeLists.txt.
+
+**Solution**: The `pymgclient` dependency requires cmake and a C compiler to build from source. Install the build prerequisites:
+
+```
+Ubuntu/Debian: sudo apt install cmake build-essential libssl-dev
+macOS:         brew install cmake openssl
+```
+
+Then retry the installation.
 
 ### Connection refused to Memgraph
 
