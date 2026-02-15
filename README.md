@@ -63,6 +63,20 @@ If you use the [nvim-markdown-notes](https://github.com/username/nvim-markdown-n
 nvim-markdown-notes-memgraph --help
 ```
 
+### Updating
+
+To update to the latest version:
+
+```bash
+uv tool install --force git+https://github.com/xpcoffee/nvim-markdown-notes-memgraph.git
+```
+
+Or if installed via pip:
+
+```bash
+pip install --upgrade git+https://github.com/xpcoffee/nvim-markdown-notes-memgraph.git
+```
+
 ## Usage
 
 The CLI provides several commands for managing the Memgraph database and MCP server.
