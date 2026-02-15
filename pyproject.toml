@@ -41,3 +41,6 @@ nvim-markdown-notes-memgraph = "nvim_markdown_notes_memgraph.cli:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/nvim_markdown_notes_memgraph"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"docker-compose.yml" = "nvim_markdown_notes_memgraph/docker-compose.yml"

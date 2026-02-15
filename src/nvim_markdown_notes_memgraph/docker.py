@@ -26,15 +26,15 @@ def _get_compose_file() -> Path:
     Raises:
         DockerComposeError: If docker-compose.yml is not found
     """
-    # The docker.py is in src/nvim_markdown_notes_memgraph/docker.py, so go up to project root
-    module_file = Path(__file__).resolve()
-    project_root = module_file.parent.parent.parent
-    compose_file = project_root / 'docker-compose.yml'
+    from importlib.resources import files
 
-    if not compose_file.exists():
-        raise DockerComposeError(f"docker-compose.yml not found at {compose_file}")
+    compose_file = files("nvim_markdown_notes_memgraph").joinpath("docker-compose.yml")
+    path = Path(str(compose_file))
 
-    return compose_file
+    if not path.exists():
+        raise DockerComposeError(f"docker-compose.yml not found at {path}")
+
+    return path
 
 
 def start_services(notes_root: str, wait_for_health: bool = True, timeout: int = 60) -> None:
