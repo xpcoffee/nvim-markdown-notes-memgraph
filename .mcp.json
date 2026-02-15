@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "nvim-markdown-notes-memgraph": {
+      "command": "nvim-markdown-notes-memgraph",
+      "args": ["serve"],
+      "env": {
+        "MEMGRAPH_HOST": "localhost",
+        "MEMGRAPH_PORT": "7687",
+        "NOTES_ROOT": "${NOTES_ROOT}"
+      }
+    }
+  }
+}
